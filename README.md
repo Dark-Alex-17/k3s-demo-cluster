@@ -9,8 +9,12 @@ A demonstration k3s cluster with a full *arr suite.
 * Export the local bin path: `export PATH=~/.local/bin:$PATH`
 * Install the required Ansible dependencies using Ansible Galaxy (`ansible-galaxy install -r requirements.yml`)
 * 1 or more Raspberry Pis with Raspbian or some other Debian-based OS installed
+* Populate the `k3s_primary_node_ip` with the IP of your primary node in the [group_vars](./inventories/k3s/group_vars/all.yml) file
 
+### Customization
 Once you have the IP of your nodes, update the [hosts](./inventories/k3s/hosts.yml) file with the IP addresses of your nodes accordingly.
+
+Additionally, to modify variables used by the playbook, be sure to update the [group_vars](./inventories/k3s/group_vars/all.yml) file with the appropriate values.
 
 ## Initialize the Cluster
 To create the master node for the cluster, run the following command:
