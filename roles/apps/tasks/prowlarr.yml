@@ -1,0 +1,20 @@
+- name: Create Prowlarr PVC
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'prowlarr/prowlarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Prowlarr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'prowlarr/prowlarr-deployment.yaml') | from_yaml }}"
+
+- name: Create Prowlarr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'prowlarr/prowlarr-service.yaml') | from_yaml }}"

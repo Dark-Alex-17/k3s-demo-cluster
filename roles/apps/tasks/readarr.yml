@@ -1,0 +1,34 @@
+- name: Create Readarr PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'readarr/readarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Readarr PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'readarr/readarr-claim1-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Readarr PVC 3
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'readarr/readarr-claim2-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Readarr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'readarr/readarr-deployment.yaml') | from_yaml }}"
+
+- name: Create Readarr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'readarr/readarr-service.yaml') | from_yaml }}"

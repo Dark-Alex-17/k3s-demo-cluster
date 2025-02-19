@@ -1,0 +1,13 @@
+- name: Setup a new K3s cluster
+  hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: k3s, tags: k3s-cluster }
+
+- name: Deploy applications into Kubernetes cluster
+  hosts: kube-primary
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: apps, tags: apps }

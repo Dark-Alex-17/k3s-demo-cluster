@@ -1,0 +1,34 @@
+- name: Create Bazarr PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'bazarr/bazarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Bazarr PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'bazarr/bazarr-claim1-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Bazarr PVC 3
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'bazarr/bazarr-claim2-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Bazarr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'bazarr/bazarr-deployment.yaml') | from_yaml }}"
+
+- name: Create Bazarr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'bazarr/bazarr-service.yaml') | from_yaml }}"

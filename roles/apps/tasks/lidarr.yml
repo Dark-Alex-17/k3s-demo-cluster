@@ -1,0 +1,34 @@
+- name: Create Lidarr PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'lidarr/lidarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Lidarr PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'lidarr/lidarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Lidarr PVC 3
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'lidarr/lidarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Lidarr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'lidarr/lidarr-deployment.yaml') | from_yaml }}"
+
+- name: Create Lidarr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'lidarr/lidarr-service.yaml') | from_yaml }}"

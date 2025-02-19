@@ -1,0 +1,20 @@
+- name: Create Tautulli PVC
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'tautulli/tautulli-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Tautulli deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'tautulli/tautulli-deployment.yaml') | from_yaml }}"
+
+- name: Create Tautulli service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'tautulli/tautulli-service.yaml') | from_yaml }}"

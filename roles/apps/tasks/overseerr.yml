@@ -1,0 +1,20 @@
+- name: Create Overseerr PVC
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'overseerr/overseerr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Overseerr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'overseerr/overseerr-deployment.yaml') | from_yaml }}"
+
+- name: Create Overseerr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'overseerr/overseerr-service.yaml') | from_yaml }}"

@@ -1,0 +1,234 @@
+- name: Configure local prerequisites
+  block:
+    - name: Add Kubernete's public signing key
+      apt_key:
+        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+        keyring: /usr/share/keyrings/kubernetes-apt-keyring.gpg
+      delegate_to: 127.0.0.1
+      become: true
+
+    - name: Set up apt repositories
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg trusted=yes] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+      delegate_to: 127.0.0.1
+      become: true
+
+    - name: Install the local CLI tools for Kubernetes
+      apt:
+        update_cache: yes
+        name:
+          - kubectl
+          - helm
+          - python3-kubernetes
+      delegate_to: 127.0.0.1
+      become: true
+
+- name: Install Docker
+  apt:
+    update_cache: yes
+    name: docker.io
+
+- name: Install btop for process monitoring
+  apt:
+    update_cache: yes
+    name: btop
+
+- name: Install python3-kubernetes
+  apt:
+    update_cache: yes
+    name: python3-kubernetes
+
+- name: Check if cmdline has been updated
+  shell:
+    cmd: cat /boot/firmware/cmdline.txt | grep -q cgroup_enable
+  changed_when: no
+  ignore_errors: true
+  register: cmdline_status
+
+- name: Enable the required container features
+  shell:
+    cmd: sudo sed -i '$ s/$/ cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1/' /boot/firmware/cmdline.txt
+  when: cmdline_status.rc != 0
+
+- name: Disable swap
+  shell:
+    cmd: swapoff -a
+
+- name: Permanently disable swap memory
+  replace:
+    path: /etc/dphys-swapfile
+    regexp: '^CONF_SWAPSIZE=\d+'
+    replace: "CONF_SWAPSIZE=0"
+
+- name: Reboot system
+  reboot:
+    reboot_timeout: 3600
+  when: cmdline_status.rc != 0
+
+- name: Setup K3s on the primary node
+  block:
+    - name: Create the /opt/k3s directory
+      file:
+        path: /opt/k3s
+        state: directory
+
+    - name: Download and install K3s
+      shell:
+        cmd: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --disable=traefik --flannel-backend=host-gw --tls-san={{ k3s_primary_node_ip }} --bind-address={{ k3s_primary_node_ip }} --advertise-address={{ k3s_primary_node_ip }} --node-ip={{ k3s_primary_node_ip }} --cluster-init" sh -s -
+
+    - name: Fetch the access token
+      shell:
+        cmd: cat /var/lib/rancher/k3s/server/node-token
+      register: cluster_token
+
+    - name: Install the nginx Ingress controller
+      shell:
+        cmd: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.3/deploy/static/provider/baremetal/deploy.yaml
+
+    - name: Copy over the ingress-controller-load-balancer service
+      copy:
+        src: ingress-controller-load-balancer.yaml
+        dest: /opt/k3s/ingress-controller-load-balancer.yaml
+
+    - name: Create the load balancer
+      shell:
+        cmd: kubectl apply -f /opt/k3s/ingress-controller-load-balancer.yaml
+
+    - name: Fetch the kubeconfig for the user
+      shell:
+        cmd: cat /etc/rancher/k3s/k3s.yaml
+      register: kube_config
+
+    - name: Encrypt this cluster token and add it to the group vars for kube
+      debug:
+        msg: "{{ cluster_token.stdout }}"
+
+    - name: Downloading the k3s config file
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "/home/{{ user_name }}/.kube/config"
+        flat: true
+        group: "{{ user_name }}"
+        owner: "{{ user_name }}"
+
+    - name: Updating the k3s config file
+      replace:
+        path: /etc/rancher/k3s/k3s.yaml
+        regexp: "127.0.0.1"
+        replace: "{{ k3s_primary_node_ip }}"
+
+    - name: Add Helm repository for the kubernetes-dashboard
+      kubernetes.core.helm_repository:
+        name: kubernetes-dashboard
+        repo_url: https://kubernetes.github.io/dashboard/
+      delegate_to: 127.0.0.1
+
+    - name: Install the Kubernetes Dashboard
+      kubernetes.core.helm:
+        name: kubernetes-dashboard
+        chart_ref: kubernetes-dashboard/kubernetes-dashboard
+        release_namespace: kubernetes-dashboard
+        create_namespace: true
+        kubeconfig: "/home/{{ user_name }}/.kube/config"
+      delegate_to: 127.0.0.1
+
+    # - name: Add Helm repository for NFS provisioner
+    #   kubernetes.core.helm_repository:
+    #     name: nfs-subdir-external-provisioner
+    #     repo_url: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+    #   delegate_to: 127.0.0.1
+
+    # - name: Install NFS subdir external provisioner
+    #   kubernetes.core.helm:
+    #     name: nfs
+    #     chart_ref: nfs-subdir-external-provisioner/nfs-subdir-external-provisioner
+    #     release_namespace: kube-system
+    #     create_namespace: true
+    #     values:
+    #       nfs:
+    #         server: "{{ nfs_server_ip }}"
+    #         path: "/volume1/nas"
+    #     kubeconfig: "/home/{{ user_name }}/.kube/config"
+    #   delegate_to: 127.0.0.1
+
+    # - name: Install the longhorn block storage system iscsi
+    #   shell:
+    #     cmd: "kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v{{ longhorn_version }}/deploy/prerequisite/longhorn-iscsi-installation.yaml"
+
+    # - name: Install the longhorn block storage system NFSv4
+    #   shell:
+    #     cmd: "kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.2/deploy/prerequisite/longhorn-nfs-installation.yaml"
+
+    # - name: Add Helm repository for longhorn
+    #   kubernetes.core.helm_repository:
+    #     name: longhorn
+    #     repo_url: https://charts.longhorn.io
+    #   delegate_to: 127.0.0.1
+
+    # - name: Install Longhorn using Helm
+    #   community.kubernetes.helm:
+    #     name: longhorn
+    #     chart_ref: longhorn/longhorn
+    #     values_file: "{{ role_path }}/files/value.yaml"
+    #     namespace: longhorn-system
+    #     create_namespace: true
+    #     state: present
+
+    # - name: Create PersistentVolume for full NFS access
+    #   kubernetes.core.k8s:
+    #     state: present
+    #     kubeconfig: /etc/rancher/k3s/k3s.yaml
+    #     definition:
+    #       apiVersion: v1
+    #       kind: PersistentVolume
+    #       metadata:
+    #         name: nfs-pv
+    #         namespace: default
+    #       spec:
+    #         capacity:
+    #           storage: 100Gi
+    #         accessModes:
+    #           - ReadWriteMany
+    #         storageClassName: nfs
+    #         nfs:
+    #           path: /volume1/nas
+    #           server: "{{ nfs_server_ip }}"
+    #         persistentVolumeReclaimPolicy: Retain
+
+    # - name: Create PersistentVolumeClaim for NFS
+    #   kubernetes.core.k8s:
+    #     state: present
+    #     kubeconfig: /etc/rancher/k3s/k3s.yaml
+    #     definition:
+    #       apiVersion: v1
+    #       kind: PersistentVolumeClaim
+    #       metadata:
+    #         name: nfs-pvc
+    #         namespace: default
+    #       spec:
+    #         accessModes:
+    #           - ReadWriteMany
+    #         storageClassName: nfs
+    #         resources:
+    #           requests:
+    #             storage: 100Gi
+    #         volumeName: nfs-pv
+
+  when: "'kube-primary' in group_names and k3s_cluster_token is not defined"
+
+- name: Setup K3s on the follower node
+  shell:
+    cmd: curl -sfL https://get.k3s.io | K3S_URL=https://"{{ k3s_primary_node_ip }}":6443 K3S_TOKEN="{{ k3s_cluster_token }}" sh -
+  when: "'kube-primary' not in group_names and k3s_cluster_token is defined"
+
+- name: Check to see if Flannel is properly configured
+  stat:
+    path: /etc/cni/net.d/10-flannel.conf
+  changed_when: no
+  register: flannel_config_file
+
+- name: Copy over the flannel config if it is not properly configured
+  copy:
+    src: 10-flannel.conf
+    dest: /etc/cni/net.d/10-flannel.conf
+  when: not flannel_config_file.stat.exists

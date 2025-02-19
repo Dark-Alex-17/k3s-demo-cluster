@@ -1,0 +1,27 @@
+- name: Create Transmission PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'transmission/transmission-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Transmission PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'transmission/transmission-claim1-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Transmission deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'transmission/transmission-deployment.yaml') | from_yaml }}"
+
+- name: Create Transmission service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'transmission/transmission-service.yaml') | from_yaml }}"

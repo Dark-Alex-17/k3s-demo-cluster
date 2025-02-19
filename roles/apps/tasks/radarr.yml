@@ -1,0 +1,20 @@
+- name: Create Radarr PVC
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'radarr/radarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Radarr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'radarr/radarr-deployment.yaml') | from_yaml }}"
+
+- name: Create Radarr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'radarr/radarr-service.yaml') | from_yaml }}"

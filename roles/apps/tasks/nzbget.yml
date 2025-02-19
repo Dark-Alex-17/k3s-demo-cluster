@@ -1,0 +1,27 @@
+- name: Create NZBGet PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'nzbget/nzbget-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create NZBGet PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'nzbget/nzbget-claim1-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create NZBGet deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'nzbget/nzbget-deployment.yaml') | from_yaml }}"
+
+- name: Create NZBGet service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'nzbget/nzbget-service.yaml') | from_yaml }}"

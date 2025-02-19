@@ -1,0 +1,4 @@
+k3s_primary_node_ip: 192.168.0.188
+longhorn_version: 1.7.2
+nfs_server_ip: 192.168.0.62
+user_name: "{{ lookup('env', 'USER') }}"

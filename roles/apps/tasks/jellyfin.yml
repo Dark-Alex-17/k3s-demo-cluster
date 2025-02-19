@@ -1,0 +1,34 @@
+- name: Create Jellyfin PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'jellyfin/jellyfin-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Jellyfin PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'jellyfin/jellyfin-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Jellyfin PVC 3
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'jellyfin/jellyfin-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Jellyfin deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'jellyfin/jellyfin-deployment.yaml') | from_yaml }}"
+
+- name: Create Jellyfin service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'jellyfin/jellyfin-service.yaml') | from_yaml }}"

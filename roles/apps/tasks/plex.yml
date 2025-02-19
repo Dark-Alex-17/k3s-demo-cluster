@@ -1,0 +1,27 @@
+- name: Create Plex PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'plex/plex-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Plex PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'plex/plex-claim1-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Plex PVC 3
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'plex/plex-claim2-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Plex deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'plex/plex-deployment.yaml') | from_yaml }}"

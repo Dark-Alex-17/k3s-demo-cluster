@@ -1,0 +1,34 @@
+- name: Create Sonarr PVC 1
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'sonarr/sonarr-claim0-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Sonarr PVC 2
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'sonarr/sonarr-claim1-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Sonarr PVC 3
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'sonarr/sonarr-claim2-persistentvolumeclaim.yaml') | from_yaml }}"
+
+- name: Create Sonarr deployment
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'sonarr/sonarr-deployment.yaml') | from_yaml }}"
+
+- name: Create Sonarr service
+  kubernetes.core.k8s:
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    state: present
+    namespace: default
+    definition: "{{ lookup('file', 'sonarr/sonarr-service.yaml') | from_yaml }}"
