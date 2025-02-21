@@ -1,5 +1,9 @@
-# demo-k3s-cluster
-A demonstration k3s cluster with a full *arr suite.
+# k3s-demo-cluster
+This repository houses an Ansible playbook to create a K3s cluster on Raspberry Pis. It will automatically create the master node and add as many worker nodes as you'd like. Then, once the cluster is created, you can deploy the *arr suite and a handful of other services into the cluster for testing.
+
+The resource definitions for each service are generated using [kompose](https://kompose.io/), which is a tool for converting Docker Compose files into Kubernetes resource definitions.
+This is done to make it easy for beginners to understand how Kubernetes works without needing to learn complex resource definitions.
+To this end, all the original `docker-compose.yml` files are also available in each service's directory.
 
 ## Prerequisites
 **Note:** All steps in this guide are performed on Ubuntu 22.04. User experience may differ.
